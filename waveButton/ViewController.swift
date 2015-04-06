@@ -13,6 +13,11 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        let button = waveButton(frame: CGRectMake(100, 100, 100, 100)){[unowned self] in
+            println("button pushed")
+        }
+        view.addSubview(button)
     }
 
     override func didReceiveMemoryWarning() {

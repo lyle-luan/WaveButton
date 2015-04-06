@@ -23,16 +23,34 @@ class waveButton: UIView
     var touchAnimatonHandlerOptional: (()->())?
     var pathFrom = UIBezierPath()
     var isTouchBeginAnimationHasStop = true
+    var actionHandlerOptional: (()->())?
     
     struct Constante
     {
         static let touchBeginOffSetX = CGFloat(-1)
         static let touchBeginOffSetY = CGFloat(-2)
+        
+        static let touchBeginAnimationKey = "touchBeginAnimationKey"
+        static let touchEndAnimationKey = "touchEndAnimationKey"
     }
     
     required init(coder aDecoder: NSCoder)
     {
         super.init(coder: aDecoder)
+        didInt()
+    }
+    
+    init(frame: CGRect, actionHandler handler: ()->())
+    {
+        super.init(frame: frame)
+        actionHandlerOptional = handler
+        didInt()
+    }
+    
+    func didInt()
+    {
+        backgroundColor = UIColor.purpleColor()
+        
         layer.cornerRadius = bounds.width/2
         layer.masksToBounds = true
         multipleTouchEnabled = false
@@ -63,7 +81,8 @@ class waveButton: UIView
             animation.toValue = pathTo.CGPath
             animation.keyPath = "path"
             animation.duration = 0.5
-            shapeLayer.addAnimation(animation, forKey: nil)
+            animation.removedOnCompletion = false
+            shapeLayer.addAnimation(animation, forKey: Constante.touchBeginAnimationKey)
         }
     }
     
@@ -73,11 +92,13 @@ class waveButton: UIView
             self.shapeLayer.fillColor = UIColor.clearColor().CGColor
             
             let animation = CABasicAnimation()
+            animation.delegate = self
             animation.fromValue = self.shapeLayer.presentationLayer().valueForKeyPath("fillColor") as CGColor
             animation.toValue = UIColor.clearColor().CGColor
             animation.keyPath = "fillColor"
             animation.duration = 0.3
-            self.shapeLayer.addAnimation(animation, forKey: nil)
+            animation.removedOnCompletion = false
+            self.shapeLayer.addAnimation(animation, forKey: Constante.touchEndAnimationKey)
         }
         
         if isTouchBeginAnimationHasStop
@@ -104,16 +125,29 @@ extension waveButton
 {
     override func animationDidStart(anim: CAAnimation!)
     {
-        isTouchBeginAnimationHasStop = false
+        if shapeLayer.animationForKey(Constante.touchBeginAnimationKey) == anim
+        {
+            isTouchBeginAnimationHasStop = false
+        }
     }
     
     override func animationDidStop(anim: CAAnimation!, finished flag: Bool)
     {
-        isTouchBeginAnimationHasStop = true
-        
-        if let touchAnimationHandler = touchAnimatonHandlerOptional
+        if shapeLayer.animationForKey(Constante.touchBeginAnimationKey) == anim
         {
-            touchAnimationHandler()
+            isTouchBeginAnimationHasStop = true
+            
+            if let touchAnimationHandler = touchAnimatonHandlerOptional
+            {
+                touchAnimationHandler()
+            }
+        }
+        else
+        {
+            if let action = actionHandlerOptional
+            {
+                action()
+            }
         }
     }
 }
