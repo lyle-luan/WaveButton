@@ -64,6 +64,7 @@ class waveButton: UIView
     {
         if let touch = touches.allObjects.first as? UITouch
         {
+            userInteractionEnabled = false
             self.shapeLayer.fillColor = UIColor.blueColor().CGColor
             touchAnimatonHandlerOptional = nil
             
@@ -163,6 +164,7 @@ extension waveButton
         else if shapeLayer.animationForKey(Constante.touchEndAnimationKey) == anim
         {
             shapeLayer.removeAllAnimations()
+            userInteractionEnabled = true
             
             if isTouchUpInside
             {
