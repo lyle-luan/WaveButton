@@ -24,6 +24,7 @@ class waveButton: UIView
     var pathFrom = UIBezierPath()
     var isTouchBeginAnimationHasStop = true
     var actionHandlerOptional: (()->())?
+    var isTouchUpInside = true
     
     struct Constante
     {
@@ -88,6 +89,32 @@ class waveButton: UIView
     
     override func touchesEnded(touches: NSSet, withEvent event: UIEvent)
     {
+        resetButton()
+        if let touch = touches.allObjects.first as? UITouch
+        {
+            if self.pointInside(touch.locationInView(self), withEvent: nil)
+            {
+                isTouchUpInside = true
+            }
+            else
+            {
+                isTouchUpInside = false
+            }
+        }
+    }
+    
+    override func touchesMoved(touches: NSSet, withEvent event: UIEvent)
+    {
+
+    }
+    
+    override func touchesCancelled(touches: NSSet!, withEvent event: UIEvent!)
+    {
+        resetButton()
+    }
+    
+    func resetButton()
+    {
         let touchEndHandler: ()->() = {[unowned self] in
             self.shapeLayer.fillColor = UIColor.clearColor().CGColor
             
@@ -109,15 +136,6 @@ class waveButton: UIView
         {
             touchAnimatonHandlerOptional = touchEndHandler
         }
-    }
-    
-    override func touchesMoved(touches: NSSet, withEvent event: UIEvent)
-    {
-
-    }
-    
-    override func touchesCancelled(touches: NSSet!, withEvent event: UIEvent!)
-    {
     }
 }
 
@@ -142,11 +160,16 @@ extension waveButton
                 touchAnimationHandler()
             }
         }
-        else
+        else if shapeLayer.animationForKey(Constante.touchEndAnimationKey) == anim
         {
-            if let action = actionHandlerOptional
+            shapeLayer.removeAllAnimations()
+            
+            if isTouchUpInside
             {
-                action()
+                if let action = actionHandlerOptional
+                {
+                    action()
+                }
             }
         }
     }
